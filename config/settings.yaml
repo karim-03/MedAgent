@@ -1,0 +1,23 @@
+# MedAgent configuration — no hardcoded values in code, everything pulled from here.
+
+llm:
+  provider: ollama
+  model: qwen2.5:7b-instruct-q4_K_M
+  fallback_model: gemma3:4b   # used if VRAM contention with embeddings becomes an issue
+
+embeddings:
+  model: sentence-transformers/all-MiniLM-L6-v2
+  device: cpu   # deliberate: keeps full VRAM budget free for the LLM
+
+vector_store:
+  backend: faiss
+  index_path: embeddings/faiss_index
+
+ml:
+  dataset: heart_disease
+  raw_path: data/raw/heart_raw.csv
+  processed_dir: data/processed
+  target_column: target
+  flip_target_polarity: true   # see docs/data_audit_findings.md — pending your confirmation
+  test_size: 0.2
+  random_state: 42

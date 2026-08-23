@@ -1,0 +1,16 @@
+pandas
+numpy
+scikit-learn
+xgboost
+shap
+matplotlib
+pytest
+sentence-transformers
+faiss-cpu
+joblib
+ollama
+langgraph
+langchain
+pydantic
+streamlit
+PyYAML

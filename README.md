@@ -34,7 +34,6 @@ python scripts/run_p3_pipeline.py     # benchmarks the local LLM — run this on
 pytest tests/unit/ -v
 ```
 
-
 See `docs/architecture.md` for full architecture, `docs/data_audit_findings.md`
 for the dataset audit that preprocessing.py implements,
 `docs/model_evaluation_findings.md` for why Random Forest was selected,

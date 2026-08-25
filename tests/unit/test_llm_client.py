@@ -39,6 +39,7 @@ skip_if_no_ollama = pytest.mark.skipif(
 )
 
 
+
 # ---------- logic tests (no server needed) ----------
 
 def test_config_defines_primary_and_fallback_model():

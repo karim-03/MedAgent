@@ -148,4 +148,5 @@ def build_graph(client: LocalLLMClient):
     graph.add_edge("retrieve", "synthesize")
     graph.add_edge("synthesize", END)
 
+
     return graph.compile()

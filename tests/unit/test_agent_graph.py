@@ -171,5 +171,6 @@ def test_followup_prompt_acknowledges_newly_learned_fields_on_second_turn(no_op_
 
     graph.invoke(state)
 
+
     followup_call = next(c for c in client.calls if c["system"] and "exactly one field" in c["system"].lower())
     assert "chol=260" in followup_call["prompt"]

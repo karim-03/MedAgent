@@ -357,13 +357,6 @@ Keep P0–P5 essentially as-is (that's your defensible core), but cut like this:
 
 This leaves comfortable headroom for a growing context window during a longer conversation. If you later add a second concurrent model (e.g. a reranker), revisit this budget explicitly rather than assuming it'll fit.
 
-**Verified on real hardware (Windows 11, RTX 4060, 2026-07-27)**: measured
-4.7 GB VRAM, 100% GPU, ~50 tokens/second — matches this table's prediction
-closely. Full results and one prompt-correctness finding in
-`docs/llm_verification_findings.md`. Note the measurement was taken at
-Ollama's default 4096-token context; re-verify if P4 needs a larger
-context window, since VRAM grows with it.
-
 ---
 
 ## 10. Risks & Mitigations

@@ -2,35 +2,34 @@
   "results": [
     {
       "case": "structured_field_extraction",
-      "text": "{\n  \"age\": 58,\n  \"sex\": \"man\",\n  \"resting_bp\": 145,\n  \"symptoms\": [\"chest tightness when climbing stairs\"]\n}",
+      "text": "{\n  \"age\": 58,\n  \"sex\": \"man\",\n  \"resting_bp\": 145,\n  \"symptoms\": \"chest tightness when I climb stairs\"\n}",
       "model_used": "qwen2.5:7b-instruct-q4_K_M",
       "used_fallback": false,
       "prompt_tokens": 83,
-      "completion_tokens": 42,
-      "total_duration_s": 1.2107835998758674,
-      "tokens_per_second": 49.65918428877998
+      "completion_tokens": 43,
+      "total_duration_s": 0.9183450510000171,
+      "tokens_per_second": 50.53057099545225
     },
     {
       "case": "follow_up_question_generation",
-      "text": "Have any blood tests, including cholesterol levels, or an exercise stress test been conducted recently?",
+      "text": "Have any blood tests been done recently, including cholesterol levels?",
       "model_used": "qwen2.5:7b-instruct-q4_K_M",
       "used_fallback": false,
       "prompt_tokens": 86,
-      "completion_tokens": 19,
-      "total_duration_s": 0.7442545997910202,
-      "tokens_per_second": 51.182311393182516
+      "completion_tokens": 13,
+      "total_duration_s": 0.2646218659999988,
+      "tokens_per_second": 55.188106538517054
     },
     {
       "case": "risk_narrative_synthesis",
-      "text": "The model predicts the presence of heart disease with a probability of 78%. The key factors contributing to this prediction are the thalassemia status indicating a reversible defect, two out of three vessels blocked, and an ST depression value of 2.1 during exercise testing.",
+      "text": "The model predicts a 78% probability of the patient having heart disease. The top contributing factors include a thalassemia condition, two vessels with blocked arteries, and an ST depression value of 2.1. These factors significantly influence the model's prediction.",
       "model_used": "qwen2.5:7b-instruct-q4_K_M",
       "used_fallback": false,
       "prompt_tokens": 100,
-      "completion_tokens": 58,
-      "total_duration_s": 1.527791399974376,
-      "tokens_per_second": 49.886980186267664
+      "completion_tokens": 56,
+      "total_duration_s": 1.1273738520000052,
+      "tokens_per_second": 50.95536764752717
     }
   ],
-  "ollama_ps": "NAME                          ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen2.5:7b-instruct-q4_K_M    845dbda0ea48    4.7 GB    100% GPU     4096       4 minutes from now",
-  "hardware": "Windows 11, RTX 4060, verified 2026-07-27"
+  "ollama_ps": "NAME                          ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen2.5:7b-instruct-q4_K_M    845dbda0ea48    4.7 GB    100% GPU     4096       4 minutes from now"
 }

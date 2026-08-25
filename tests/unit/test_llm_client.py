@@ -135,7 +135,6 @@ def test_real_generate_returns_nonempty_text():
     assert result.total_duration_s > 0
 
 
-
 @skip_if_no_ollama
 def test_real_generate_json_format_is_valid_json():
     import json

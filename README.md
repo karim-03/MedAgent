@@ -3,7 +3,6 @@
 Educational capstone project. NOT a certified medical device — see disclaimer
 in docs/architecture.md Section 0.
 
-
 ## Status
 - [x] P0 — Foundations (architecture approved, repo skeleton)
 - [x] P1 — ML Core: dataset audit, preprocessing, model training/comparison,
@@ -13,15 +12,20 @@ in docs/architecture.md Section 0.
       (see data/knowledge_base/sources_manifest.md), chunked (43 chunks),
       embedded, and FAISS-indexed with citation-backed retrieval — see
       docs/knowledge_base_findings.md.
-- [x] P3 — Local LLM: verified on real hardware (Windows 11, RTX 4060) —
-      4.7GB VRAM (matches predicted ~4.5GB), ~50 tokens/s, 100% GPU. One
-      correctness finding to fix in P4's prompts before trusting them —
+- [x] P3 — Local LLM: verified on real hardware (CachyOS, RTX 4060) — 4.7GB
+      VRAM (matches predicted ~4.5GB), 50-55 tokens/s, 100% GPU, clean on
+      all 3 correctness checks (no numeric drift in the risk narrative) —
       see docs/llm_verification_findings.md.
-- [ ] P4 — Agent Core
+- [x] P4 — Agent Core: LangGraph state machine (intake -> clarify/followup
+      loop -> predict -> explain -> retrieve -> synthesize), 5 independently
+      testable tools, both P3 findings closed (sex normalization, narrative
+      specificity), a SHAP-deduplication bug caught by running it, and a
+      real-hardware run that found + fixed a repeated-question issue by
+      making field selection deterministic instead of LLM-judgment-based
+      — see docs/agent_core_findings.md.
 - [ ] P5 — Reporting
 - [ ] P6 — Interfaces
 - [ ] P7 — Hardening
-
 
 ## Setup
 ```
@@ -31,6 +35,7 @@ python scripts/run_p1_pipeline.py     # trains/compares/evaluates/explains, save
 python scripts/run_p2_pipeline.py     # builds the FAISS index, demos retrieval with citations (needs internet on first run only, to pull the embedding model)
 ollama pull qwen2.5:7b-instruct-q4_K_M && ollama pull gemma3:4b
 python scripts/run_p3_pipeline.py     # benchmarks the local LLM — run this on your actual GPU machine
+python scripts/run_p4_pipeline.py     # runs a real multi-turn agent conversation — also needs your GPU machine
 pytest tests/unit/ -v
 ```
 
@@ -38,5 +43,6 @@ See `docs/architecture.md` for full architecture, `docs/data_audit_findings.md`
 for the dataset audit that preprocessing.py implements,
 `docs/model_evaluation_findings.md` for why Random Forest was selected,
 `docs/knowledge_base_findings.md` for the RAG knowledge base sourcing and
-retrieval design, and `docs/llm_verification_findings.md` for the local LLM
-setup and what still needs real-hardware numbers.
+retrieval design, `docs/llm_verification_findings.md` for the local LLM
+setup and real-hardware numbers, and `docs/agent_core_findings.md` for the
+agent graph design and what still needs a real end-to-end run.

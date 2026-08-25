@@ -18,6 +18,28 @@ ml:
   raw_path: data/raw/heart_raw.csv
   processed_dir: data/processed
   target_column: target
-  flip_target_polarity: true   # see docs/data_audit_findings.md — pending your confirmation
+  flip_target_polarity: true   # confirmed correct — see docs/model_evaluation_findings.md (SHAP/clinical-direction cross-check)
   test_size: 0.2
   random_state: 42
+  model_path: ml/models/best_model.joblib
+
+agent:
+  # The 13 fields the ML model needs. cp/restecg/slope/thal are nominal
+  # categorical codes (see ml/training/preprocessing.py NOMINAL_COLUMNS)
+  # — the agent asks for them in plain language and the Validation tool
+  # maps plain language to these codes, never the reverse.
+  required_fields:
+    - age
+    - sex
+    - cp
+    - trestbps
+    - chol
+    - fbs
+    - restecg
+    - thalach
+    - exang
+    - oldpeak
+    - slope
+    - ca
+    - thal
+  max_followup_questions: 8   # safety valve against an infinite intake loop

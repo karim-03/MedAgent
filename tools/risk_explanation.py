@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from llm.client import LocalLLMClient
 from ml.evaluation.shap_analysis import explain_single_prediction
 from tools.disease_prediction import PredictionResult, _get_model
+from tools.feature_labels import FEATURE_LABELS
 
 NARRATIVE_SYSTEM_PROMPT = """You are summarizing a machine learning model's heart disease risk prediction for a clinician. Rules, no exceptions:
 1. State the probability exactly as given (e.g. 0.78 -> "78%"), never rounded to a vague band, never changed.
@@ -31,31 +32,12 @@ class RiskExplanation:
     narrative: str
 
 
-# Maps a raw ML feature name to (a) a human label for SHAP display and
-# (b) the specific-value phrase used in the narrative prompt.
-_FEATURE_LABELS = {
-    "age": "age",
-    "sex": "sex",
-    "cp": "chest pain type",
-    "trestbps": "resting blood pressure",
-    "chol": "cholesterol",
-    "fbs": "fasting blood sugar",
-    "restecg": "resting ECG result",
-    "thalach": "maximum heart rate achieved",
-    "exang": "exercise-induced angina",
-    "oldpeak": "ST depression (oldpeak)",
-    "slope": "ST segment slope",
-    "ca": "number of blocked vessels",
-    "thal": "thalassemia result",
-}
-
-
 def _humanize_shap_feature_name(transformed_name: str) -> str:
     """SHAP operates on post-one-hot-encoding column names like
     'cat__thal_2' or 'num__ca' — map back to the raw feature for display."""
     base = transformed_name.split("__", 1)[-1]
-    base = base.rsplit("_", 1)[0] if base.rsplit("_", 1)[0] in _FEATURE_LABELS else base
-    return _FEATURE_LABELS.get(base, base)
+    base = base.rsplit("_", 1)[0] if base.rsplit("_", 1)[0] in FEATURE_LABELS else base
+    return FEATURE_LABELS.get(base, base)
 
 
 def get_shap_contributions(prediction: PredictionResult, top_n: int = 3) -> list:
@@ -72,7 +54,7 @@ def get_shap_contributions(prediction: PredictionResult, top_n: int = 3) -> list
     contributions = []
     for row in contrib_df.itertuples():
         base = row.feature.split("__", 1)[-1].rsplit("_", 1)[0]
-        if base not in _FEATURE_LABELS:
+        if base not in FEATURE_LABELS:
             base = row.feature.split("__", 1)[-1]
         if base in seen_bases:
             continue

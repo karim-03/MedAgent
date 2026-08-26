@@ -12,6 +12,18 @@ the ML model uses, with the categorical codes explained inline — so
 "symptoms" never exists as an intermediate representation, and
 tools/validation.py only ever has to normalize formatting (e.g. "man" ->
 1), not re-derive clinical categories from prose.
+
+Second fix, found on a real hardware run (docs/agent_core_findings.md):
+the first version of this tool asked the LLM to both phrase the follow-up
+question AND acknowledge newly-learned information in the same
+generation, via a soft instruction ("briefly acknowledge it in one
+clause"). On real Ollama output, the model dropped the acknowledgment
+silently — two different prompts (one with new info to acknowledge, one
+without) produced byte-identical output. Acknowledgment text is now built
+deterministically in code (`_build_acknowledgment`) and prepended to
+whatever the LLM returns, rather than trusted to a soft instruction the
+model isn't reliably following. The LLM's only remaining job is phrasing
+one question about one named field — a narrower, more reliable task.
 """
 
 import json
@@ -23,6 +35,7 @@ from typing import Optional
 import yaml
 
 from llm.client import LocalLLMClient
+from tools.feature_labels import FEATURE_LABELS
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +64,7 @@ Fields to extract, with their exact meaning:
 
 Return a JSON object using ONLY these exact field names as keys. Omit any field not mentioned — do not include it with a null or guessed value, just leave the key out entirely."""
 
-FOLLOWUP_SYSTEM_PROMPT = """You are a clinical intake assistant. You will be told exactly ONE field to ask about next, plus what the patient just told you (if anything). Write ONE short, natural, plain-language question for that field only — never field codes or jargon like "cp" or "restecg", ask the way a person would describe it (e.g. "Have you had a resting ECG done?"). If the patient just provided new information, briefly acknowledge it in one clause before asking, so the question doesn't read as if you ignored what they said."""
+FOLLOWUP_SYSTEM_PROMPT = """You are a clinical intake assistant. You will be told exactly ONE field to ask about. Write ONE short, natural, plain-language question for that field only — never field codes or jargon like "cp" or "restecg", ask the way a person would describe it (e.g. "Have you had a resting ECG done?"). Output only the question itself, nothing else."""
 
 # Fields the LLM is asked about, in priority order — highest predictive
 # importance first (see docs/model_evaluation_findings.md: thal, ca,
@@ -103,6 +116,18 @@ def select_next_missing_field(missing_fields: list) -> Optional[str]:
     return ranked[0]
 
 
+def _build_acknowledgment(newly_learned_fields: dict) -> str:
+    """Deterministic, not LLM-generated — see the module docstring's note
+    on why. Produces e.g. "Thanks — got your cholesterol and fasting blood
+    sugar." from {"chol": 260, "fbs": 0}."""
+    labels = [FEATURE_LABELS.get(k, k) for k in newly_learned_fields]
+    if len(labels) == 1:
+        joined = labels[0]
+    else:
+        joined = ", ".join(labels[:-1]) + f" and {labels[-1]}"
+    return f"Thanks — got your {joined}."
+
+
 def generate_followup_question(
     client: LocalLLMClient, target_field: str, newly_learned_fields: Optional[dict] = None
 ) -> str:
@@ -110,13 +135,14 @@ def generate_followup_question(
         (line for line in FIELD_DESCRIPTIONS.splitlines() if line.startswith(f"- {target_field}:")),
         f"- {target_field}",
     )
+    result = client.generate(
+        prompt=f"Ask about this field: {field_line}", system=FOLLOWUP_SYSTEM_PROMPT, json_format=False
+    )
+    question = result.text.strip()
+
     if newly_learned_fields:
-        learned_text = ", ".join(f"{k}={v}" for k, v in newly_learned_fields.items())
-        prompt = f"Patient just told you: {learned_text}. Now ask about this field: {field_line}"
-    else:
-        prompt = f"Ask about this field: {field_line}"
-    result = client.generate(prompt=prompt, system=FOLLOWUP_SYSTEM_PROMPT, json_format=False)
-    return result.text.strip()
+        return f"{_build_acknowledgment(newly_learned_fields)} {question}"
+    return question
 
 
 def load_required_fields() -> list:

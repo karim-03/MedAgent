@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tools.validation import validate_patient_fields, missing_required_fields
 from tools.disease_prediction import predict, FEATURE_COLUMNS
-from tools.patient_intake import select_next_missing_field, FIELD_PRIORITY_ORDER
+from tools.patient_intake import select_next_missing_field, FIELD_PRIORITY_ORDER, _build_acknowledgment
 
 COMPLETE_PATIENT = {
     "age": 58, "sex": "man", "cp": 3, "trestbps": 145, "chol": 260,
@@ -138,3 +138,21 @@ def test_field_priority_order_covers_every_required_field():
         "thalach", "exang", "oldpeak", "slope", "ca", "thal",
     }
     assert set(FIELD_PRIORITY_ORDER) == required
+
+
+# ---------- patient_intake._build_acknowledgment ----------
+
+def test_build_acknowledgment_single_field():
+    text = _build_acknowledgment({"chol": 260})
+    assert text == "Thanks — got your cholesterol."
+
+
+def test_build_acknowledgment_multiple_fields_joined_naturally():
+    text = _build_acknowledgment({"chol": 260, "fbs": 0})
+    assert text == "Thanks — got your cholesterol and fasting blood sugar."
+
+
+def test_build_acknowledgment_uses_human_labels_not_raw_field_codes():
+    text = _build_acknowledgment({"thal": 3})
+    assert "thal" not in text.lower().split()  # raw code shouldn't leak in
+    assert "thalassemia" in text.lower()

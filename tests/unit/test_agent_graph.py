@@ -156,11 +156,14 @@ def test_followup_targets_highest_priority_missing_field_deterministically():
     assert "thal" in followup_call["prompt"].lower()
 
 
-def test_followup_prompt_acknowledges_newly_learned_fields_on_second_turn(no_op_retrieval):
-    """Turn 2 should tell the LLM what was just learned, so the question
-    doesn't read as if the agent ignored the patient's last message —
-    this is the actual fix for the observed back-to-back-identical-question
-    behavior."""
+def test_followup_response_acknowledges_newly_learned_fields_on_second_turn(no_op_retrieval):
+    """Turn 2+ should acknowledge what was just learned in the actual
+    response text the patient sees. This is now built deterministically
+    in code (tools.patient_intake._build_acknowledgment), not requested
+    from the LLM — a real hardware run showed the LLM silently dropping a
+    soft 'please acknowledge' instruction (docs/agent_core_findings.md),
+    so this test checks the guaranteed part: the final response, not
+    what was asked of the LLM."""
     client = ScriptedClient()
     client.next_extraction = {"chol": 260}  # only chol learned this turn
     graph = build_graph(client)
@@ -169,8 +172,21 @@ def test_followup_prompt_acknowledges_newly_learned_fields_on_second_turn(no_op_
     state["extracted_fields"] = {"age": 58, "sex": "male"}  # already known from a prior turn
     state["followup_count"] = 1
 
-    graph.invoke(state)
+    result = graph.invoke(state)
+
+    assert "cholesterol" in result["turn_response"].lower()
+    assert client.next_followup_text in result["turn_response"]
 
 
-    followup_call = next(c for c in client.calls if c["system"] and "exactly one field" in c["system"].lower())
-    assert "chol=260" in followup_call["prompt"]
+def test_followup_response_has_no_acknowledgment_on_opening_turn():
+    """The very first turn has nothing prior to acknowledge — the
+    acknowledgment clause should not appear (it would read as nonsensical
+    on an opening message)."""
+    client = ScriptedClient()
+    client.next_extraction = {"age": 58, "sex": "male"}  # first-ever extraction, nothing prior
+    graph = build_graph(client)
+
+    result = graph.invoke(_initial_state("I'm a 58 year old man"))
+
+    assert result["turn_response"] == client.next_followup_text
+    assert "thanks" not in result["turn_response"].lower()

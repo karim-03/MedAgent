@@ -112,9 +112,26 @@ def test_retrieve_returns_relevant_passage_for_cholesterol_query():
     build_index(save=True)  # ensure index exists in the real repo location
     results = retrieve("what is LDL and HDL cholesterol", k=3)
     assert len(results) > 0
-    # at least one of the top results should come from a cholesterol-relevant doc
-    assert any("cholesterol" in r.doc_id if hasattr(r, "doc_id") else "cholesterol" in r.text.lower()
-               for r in results)
+    assert any("cholesterol" in r.text.lower() for r in results)
+
+
+@skip_if_no_embedding_model
+def test_retrieve_returns_relevant_passage_for_thal_query():
+    """Regression test for a real gap found on a P4 hardware run: the top
+    SHAP feature is very often `thal`, but the knowledge base originally
+    had no document explaining what a reversible/fixed defect finding
+    means — retrieval silently fell back to an unrelated blood-pressure
+    passage instead of returning nothing or something relevant. This
+    checks the fix (medlineplus_nuclear_stress_test.md) actually surfaces
+    for the same query the agent builds via
+    tools.knowledge_retrieval.build_query for a thal-driven prediction."""
+    from rag.build_index import build_index
+    from rag.retrieve import retrieve
+
+    build_index(save=True)
+    results = retrieve("thalassemia heart test result", k=2)
+    assert len(results) > 0
+    assert any("reversible" in r.text.lower() or "reversible" in r.title.lower() for r in results)
 
 
 @skip_if_no_embedding_model

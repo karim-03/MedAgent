@@ -1,17 +1,25 @@
-pandas
-numpy
-scikit-learn
-xgboost
-shap
-matplotlib
-pytest
-sentence-transformers
-faiss-cpu
-joblib
-ollama
-langgraph
-langgraph
-langchain
-pydantic
-streamlit
-PyYAML
+# Pinned to exact versions actually used and tested against in this
+# project — not just "latest available at install time". This matters
+# concretely: ml/models/best_model.joblib was pickled with scikit-learn
+# 1.8.0, and loading it under a different minor version (e.g. 1.9.0)
+# raises sklearn's InconsistentVersionWarning on every run. Pinning here
+# means a fresh install matches exactly what was trained/tested against,
+# not "whatever pip resolved to on the day you ran install."
+pandas==3.0.2
+numpy==2.4.4
+scikit-learn==1.8.0
+xgboost==3.4.1
+shap==0.52.0
+matplotlib==3.10.8
+pytest==9.1.1
+sentence-transformers==6.0.0
+faiss-cpu==1.15.0
+joblib==1.5.3
+ollama==0.6.2
+PyYAML==6.0.3
+langgraph==1.2.11
+
+# Not yet used by any code in this repo — Streamlit is P6 (Interfaces),
+# not yet built. Left unpinned until that milestone actually adds a
+# `import streamlit` somewhere; pinning now would just be a guess.
+# streamlit

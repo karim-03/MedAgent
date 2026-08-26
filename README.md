@@ -8,20 +8,21 @@ in docs/architecture.md Section 0.
 - [x] P1 — ML Core: dataset audit, preprocessing, model training/comparison,
       evaluation, and SHAP explainability all done. Random Forest selected
       — see docs/data_audit_findings.md and docs/model_evaluation_findings.md.
-- [x] P2 — Knowledge Base: 8 real documents sourced from CDC/NHLBI/WHO
-      (see data/knowledge_base/sources_manifest.md), chunked (43 chunks),
-      embedded, and FAISS-indexed with citation-backed retrieval — see
-      docs/knowledge_base_findings.md.
+- [x] P2 — Knowledge Base: 9 real documents sourced from CDC/NHLBI/
+      MedlinePlus/WHO (see data/knowledge_base/sources_manifest.md),
+      chunked (48 chunks), embedded, and FAISS-indexed with
+      citation-backed retrieval — see docs/knowledge_base_findings.md.
 - [x] P3 — Local LLM: verified on real hardware (CachyOS, RTX 4060) — 4.7GB
       VRAM (matches predicted ~4.5GB), 50-55 tokens/s, 100% GPU, clean on
       all 3 correctness checks (no numeric drift in the risk narrative) —
       see docs/llm_verification_findings.md.
 - [x] P4 — Agent Core: LangGraph state machine (intake -> clarify/followup
       loop -> predict -> explain -> retrieve -> synthesize), 5 independently
-      testable tools, both P3 findings closed (sex normalization, narrative
-      specificity), a SHAP-deduplication bug caught by running it, and a
-      real-hardware run that found + fixed a repeated-question issue by
-      making field selection deterministic instead of LLM-judgment-based
+      testable tools. Two real-hardware runs each found and fixed a real
+      issue: deterministic field selection (was LLM-judgment-based),
+      code-generated acknowledgment text (was an unreliable soft LLM
+      instruction), a knowledge-base content gap for `thal` findings, and
+      a pinned-versions fix for a real sklearn version mismatch warning
       — see docs/agent_core_findings.md.
 - [ ] P5 — Reporting
 - [ ] P6 — Interfaces

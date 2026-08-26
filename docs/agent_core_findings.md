@@ -52,6 +52,55 @@ bug that a design walkthrough wouldn't have caught — it only showed up
 once real SHAP values were computed on a real feature row, which is why
 "run it, don't just plan it" mattered here.
 
+## A second real-hardware run — three separate things, only one still a bug
+
+Re-running against real Ollama after the fix above surfaced three
+distinct things worth separating clearly, since only one was an actual
+problem:
+
+1. **`faiss` "could not load AVX2/AVX512" messages: not an error.** FAISS
+   probes for progressively less-optimized CPU builds and falls back to
+   the base one — cosmetic startup logging, harmless at this corpus size
+   (48 chunks).
+2. **`sklearn.exceptions.InconsistentVersionWarning`: real, now fixed.**
+   `ml/models/best_model.joblib` was pickled with scikit-learn 1.8.0; an
+   unpinned `requirements.txt` let a fresh install resolve to 1.9.0
+   instead, and sklearn correctly warns about unpickling across a minor
+   version. `requirements.txt` now pins exact versions for every real
+   dependency (not just scikit-learn), traced from what's actually
+   installed and tested in this project, so a fresh install matches
+   exactly. **Action needed on your end**: re-run `pip install -r
+   requirements.txt` to pick up the pin, or run `pip install
+   scikit-learn==1.8.0` directly.
+3. **`thal` asked about identically on turns 1 and 2: not a repeat of the
+   original bug, but exposed a real, separate content gap.** Asking about
+   `thal` twice was actually *correct* — it genuinely stayed the
+   single highest-priority missing field both times (it wasn't answered
+   until turn 3), so deterministic selection choosing it again is exactly
+   right, not the erratic behavior fixed earlier. Turn 1 legitimately
+   shouldn't carry an acknowledgment either (nothing prior to acknowledge
+   yet) — also correct.
+
+   What the same run's final output DID reveal as a genuine bug: for a
+   `thal`-driven prediction (the single most common case, since `thal` is
+   the #1 SHAP feature), the retrieved "supporting evidence" was a **blood
+   pressure category table** — completely unrelated to the actual
+   explanation. The knowledge base had zero content on what a
+   "reversible defect" finding from a nuclear stress test actually means,
+   so retrieval had nothing relevant to return and surfaced noise instead.
+
+   **Fixed by adding real content, not by suppressing the symptom**:
+   `data/knowledge_base/medlineplus_nuclear_stress_test.md` — sourced from
+   MedlinePlus (paraphrased, since MedlinePlus Encyclopedia content is
+   A.D.A.M.-licensed, not direct public-domain NIH text, same treatment as
+   the WHO document from P2). Verified with the same TF-IDF sandbox
+   harness from P2: the new document now dominates the top-3 results for
+   the exact query that previously misfired (0.66/0.60/0.38 similarity vs.
+   an unrelated top hit before). A direct regression test
+   (`test_retrieve_returns_relevant_passage_for_thal_query`) is in place
+   for when this runs against the real embedding model on your machine.
+   Knowledge base is now 9 documents / 48 chunks (was 8/43).
+
 ## A finding from the real multi-turn run — and what it actually showed
 
 Running `scripts/run_p4_pipeline.py` against real Ollama surfaced a repeat
@@ -139,7 +188,8 @@ newly_learned_fields_on_second_turn`, plus 5 pure-logic tests on
 ## What still needs to run on your machine
 
 ```
-python scripts/run_p2_pipeline.py    # if embeddings/faiss_index/ isn't already built
+pip install -r requirements.txt      # picks up the version pins — fixes the sklearn warning
+python scripts/run_p2_pipeline.py    # re-run: knowledge base now has 9 docs (was 8), rebuild the index
 ollama serve                          # if not already running
 python scripts/run_p4_pipeline.py
 ```
@@ -152,20 +202,28 @@ extracted fields per turn, the follow-up questions asked, the final
 prediction, SHAP contributions, and the retrieval query used. Please share
 the output — specifically worth checking:
 
-1. Does the real LLM's field extraction stay disciplined across multiple
-   turns (not re-asking for something already given, not dropping a field
-   mentioned two turns ago)? The `extracted_fields` merge in `intake_node`
-   is naive dict-merging — if the real model phrases something
-   differently on turn 2 in a way that doesn't merge cleanly, that's worth
-   knowing before P5.
-2. Does the follow-up question at turn 2 read naturally now that it
-   acknowledges the newly-given cholesterol value, compared to the flat
-   repeat seen in the first run?
-3. Sanity-check the final probability and SHAP contributions look
+1. ~~Does field extraction stay disciplined across multiple turns?~~
+   Confirmed by the second real run: cholesterol and fasting blood sugar
+   from turn 2 correctly carried through to a successful prediction by
+   turn 3 without being re-asked.
+2. ~~Does the follow-up question read naturally / avoid flat repeats?~~
+   Turn 1→2 repeating the exact same `thal` question was actually correct
+   (still the top-priority missing field both times) — no longer expected
+   to change, since that behavior was right all along. What DOES need
+   checking: does turn 2's acknowledgment clause (now code-generated, not
+   LLM-dependent) read naturally prepended to the question?
+3. **New**: after rebuilding the index with the added
+   `medlineplus_nuclear_stress_test.md` document, does the retrieved
+   evidence for a `thal`-driven prediction actually discuss reversible/
+   fixed defects now, instead of an unrelated blood pressure table?
+4. Sanity-check the final probability and SHAP contributions look
    clinically sane for the scripted patient profile (a 58-year-old man
    with exertional chest pain, elevated BP/cholesterol, 2 blocked vessels,
    and a reversible defect finding should land as higher-risk, not
-   lower-risk).
+   lower-risk) — confirmed once already (87.8%), re-confirm after the
+   `requirements.txt` pin in case the scikit-learn version change shifts
+   anything (it shouldn't, but worth actually checking rather than
+   assuming).
 
 ## Next milestone
 

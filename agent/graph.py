@@ -45,7 +45,13 @@ def build_graph(client: LocalLLMClient):
 
         previously_known = state.get("extracted_fields", {})
         merged = {**previously_known, **extraction.extracted_fields}
-        newly_learned = {k: v for k, v in extraction.extracted_fields.items() if k not in previously_known}
+        # Only meaningful from the second turn on — the opening message
+        # has nothing prior to acknowledge against.
+        newly_learned = (
+            {k: v for k, v in extraction.extracted_fields.items() if k not in previously_known}
+            if previously_known
+            else {}
+        )
 
         result = validation.validate_patient_fields(merged)
         missing = validation.missing_required_fields(result.normalized_fields, required_fields)
@@ -147,6 +153,5 @@ def build_graph(client: LocalLLMClient):
     graph.add_edge("explain", "retrieve")
     graph.add_edge("retrieve", "synthesize")
     graph.add_edge("synthesize", END)
-
 
     return graph.compile()

@@ -10,7 +10,6 @@ Needs: Ollama running with the configured model pulled (P3), and the FAISS
 index built (P2 — run `python scripts/run_p2_pipeline.py` first if you
 haven't since embeddings/faiss_index/ isn't committed to the repo).
 
-
 Usage:
     python scripts/run_p4_pipeline.py
 """

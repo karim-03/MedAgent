@@ -15,7 +15,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tools.validation import validate_patient_fields, missing_required_fields
 from tools.disease_prediction import predict, FEATURE_COLUMNS
-from tools.patient_intake import select_next_missing_field, FIELD_PRIORITY_ORDER, _build_acknowledgment
+from tools.patient_intake import (
+    select_next_missing_field, FIELD_PRIORITY_ORDER, _build_acknowledgment,
+    FOLLOWUP_FIELD_TOPICS, generate_followup_question,
+)
 from tools.risk_explanation import get_shap_contributions, build_narrative
 from tools.feature_labels import describe_value
 
@@ -158,6 +161,42 @@ def test_build_acknowledgment_uses_human_labels_not_raw_field_codes():
     text = _build_acknowledgment({"thal": 3})
     assert "thal" not in text.lower().split()  # raw code shouldn't leak in
     assert "thalassemia" in text.lower()
+
+
+def test_followup_field_topics_covers_every_priority_field():
+    assert set(FOLLOWUP_FIELD_TOPICS.keys()) == set(FIELD_PRIORITY_ORDER)
+
+
+@pytest.mark.parametrize("field", list(FOLLOWUP_FIELD_TOPICS.keys()))
+def test_followup_field_topics_contain_no_numeric_codes(field):
+    """Regression test for a real leak found on a hardware run: the
+    follow-up question for `thal` included '(1)', '(2)', '(3)' because the
+    prompt reused the coded EXTRACTION field description. The actual leak
+    pattern is a bare category code — "(1)" or "1=normal" — not any digit
+    anywhere; legitimate clinical numbers like "120 mg/dl" in the fbs
+    topic are fine and expected, not a regression."""
+    import re
+    topic = FOLLOWUP_FIELD_TOPICS[field]
+    assert not re.search(r"\(\d+\)", topic), f"{field!r} topic leaks a parenthetical code: {topic!r}"
+    assert not re.search(r"\b\d+\s*=", topic), f"{field!r} topic leaks a 'N=' style code: {topic!r}"
+
+
+def test_generate_followup_question_prompt_has_no_field_description_codes():
+    """End-to-end check that the prompt actually sent to the LLM (not
+    just the topic dict) is code-free — catches a regression even if
+    someone reintroduces FIELD_DESCRIPTIONS parsing here later."""
+    class RecordingClient:
+        def generate(self, prompt, system=None, json_format=False, options=None):
+            self.last_prompt = prompt
+            from llm.client import GenerationResult
+            return GenerationResult(
+                text="fake question?", model_used="fake", used_fallback=False,
+                prompt_tokens=1, completion_tokens=1, total_duration_s=0.01, tokens_per_second=1.0,
+            )
+
+    client = RecordingClient()
+    generate_followup_question(client, "thal")
+    assert not any(char.isdigit() for char in client.last_prompt)
 
 
 # ---------- feature_labels.describe_value ----------

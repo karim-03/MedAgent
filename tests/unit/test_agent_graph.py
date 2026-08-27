@@ -25,6 +25,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from agent.graph import build_graph
 from llm.client import LocalLLMClient, GenerationResult
 from tools.knowledge_retrieval import RetrievalOutcome
+from tools.patient_intake import FOLLOWUP_SYSTEM_PROMPT
+from tools.risk_explanation import NARRATIVE_SYSTEM_PROMPT
 
 COMPLETE_PATIENT = {
     "age": 58, "sex": "male", "cp": 3, "trestbps": 145, "chol": 260,
@@ -35,7 +37,13 @@ COMPLETE_PATIENT = {
 
 class ScriptedClient(LocalLLMClient):
     """A fake client whose generate() return value is set per-test rather
-    than driven by a real model — makes graph routing deterministic."""
+    than driven by a real model — makes graph routing deterministic.
+
+    Dispatches by comparing `system` against the REAL prompt constants
+    (imported above), not by guessing a substring of the prompt wording.
+    The substring approach broke twice already when prompt wording changed
+    for real reasons (docs/agent_core_findings.md) — comparing against the
+    actual constant can't drift out of sync with the code it's testing."""
 
     def __init__(self):
         self.next_extraction: dict = {}
@@ -47,10 +55,12 @@ class ScriptedClient(LocalLLMClient):
         self.calls.append({"prompt": prompt, "system": system, "json_format": json_format})
         if json_format:
             text = json.dumps(self.next_extraction)
-        elif system and "exactly one field" in system.lower():
+        elif system == FOLLOWUP_SYSTEM_PROMPT:
             text = self.next_followup_text
-        else:
+        elif system == NARRATIVE_SYSTEM_PROMPT:
             text = self.next_narrative_text
+        else:
+            raise AssertionError(f"ScriptedClient got an unrecognized system prompt: {system!r}")
         return GenerationResult(
             text=text, model_used="scripted", used_fallback=False,
             prompt_tokens=1, completion_tokens=1, total_duration_s=0.01, tokens_per_second=1.0,
@@ -152,7 +162,7 @@ def test_followup_targets_highest_priority_missing_field_deterministically():
 
     graph.invoke(_initial_state("partial info"))
 
-    followup_call = next(c for c in client.calls if c["system"] and "exactly one field" in c["system"].lower())
+    followup_call = next(c for c in client.calls if c["system"] == FOLLOWUP_SYSTEM_PROMPT)
     assert "thal" in followup_call["prompt"].lower()
 
 

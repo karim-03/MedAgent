@@ -26,7 +26,7 @@ class AgentState(TypedDict, total=False):
     shap_contributions: Optional[list]
     narrative: Optional[str]
 
-    retrieval_query: Optional[str]
+    retrieval_queries: Optional[list]
     retrieved_passages: Optional[list]
 
     turn_response: Optional[str]  # what the agent says back this turn

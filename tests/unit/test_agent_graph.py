@@ -72,8 +72,8 @@ def no_op_retrieval(monkeypatch):
     """Every graph test that reaches the predict->synthesize path needs
     retrieval mocked out — this fixture does it once so tests don't repeat
     the monkeypatch."""
-    def fake_retrieve_evidence(shap_contributions, k=2):
-        return RetrievalOutcome(query="fake query", passages=[])
+    def fake_retrieve_evidence(shap_contributions, k_per_query=1):
+        return RetrievalOutcome(queries=["fake query"], passages=[])
     monkeypatch.setattr("agent.graph.knowledge_retrieval.retrieve_evidence", fake_retrieve_evidence)
 
 

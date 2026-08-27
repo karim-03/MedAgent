@@ -1,9 +1,22 @@
 """
 tools/knowledge_retrieval.py
-Turns the top SHAP-contributing features into a retrieval query against
+Turns the top SHAP-contributing features into retrieval queries against
 the P2 knowledge base, so the evidence shown to the clinician is actually
 about the specific factors that drove THIS patient's prediction — not a
 generic "heart disease" query.
+
+Design fix, found by actually reading the evidence on every P4 hardware
+run: the first version built ONE query from only the single top feature,
+then asked for k=2 results from it. For a small, single-topic-sparse
+corpus, that means the second result is whatever's second-closest in the
+ENTIRE corpus to that one query — not necessarily relevant at all. Every
+real run showed the same irrelevant "Blood pressure categories" passage
+riding along as filler evidence for a thalassemia finding. The fix isn't a
+higher relevance threshold (that would just return fewer results, not
+better ones) — it's asking a separate, topically-focused question per top
+feature, so a second passage exists because a second genuinely relevant
+topic exists (e.g. blocked vessels), not because k=2 demanded a second
+result regardless.
 """
 
 from dataclasses import dataclass
@@ -30,25 +43,32 @@ _FEATURE_QUERY_TOPICS = {
 }
 
 
-def build_query(shap_contributions: list) -> str:
-    """Uses only the single top contributing feature — a focused query
-    retrieves a more relevant passage than a broad multi-topic one."""
-    if not shap_contributions:
-        return "heart disease risk factors"
-    top_feature = shap_contributions[0]["raw_feature"]
-    base = top_feature.split("__", 1)[-1].rsplit("_", 1)[0]
-    if base not in _FEATURE_QUERY_TOPICS:
-        base = top_feature.split("__", 1)[-1]
-    return _FEATURE_QUERY_TOPICS.get(base, "heart disease risk factors")
+def build_queries(shap_contributions: list, max_queries: int = 3) -> list:
+    """One topically-focused query per top contributing feature (not one
+    query reused for multiple results) — see module docstring for why."""
+    queries = []
+    for contrib in shap_contributions[:max_queries]:
+        base = contrib.get("base_feature")
+        if not base or base not in _FEATURE_QUERY_TOPICS:
+            raw = contrib.get("raw_feature", "")
+            base = raw.split("__", 1)[-1].rsplit("_", 1)[0]
+        queries.append(_FEATURE_QUERY_TOPICS.get(base, "heart disease risk factors"))
+    return queries or ["heart disease risk factors"]
 
 
 @dataclass
 class RetrievalOutcome:
-    query: str
-    passages: list  # list[RetrievedPassage] — empty if nothing cleared the relevance threshold
+    queries: list  # one per top contributing feature
+    passages: list  # list[RetrievedPassage], deduplicated — empty if nothing cleared the relevance threshold
 
 
-def retrieve_evidence(shap_contributions: list, k: int = 2) -> RetrievalOutcome:
-    query = build_query(shap_contributions)
-    passages = retrieve(query, k=k)
-    return RetrievalOutcome(query=query, passages=passages)
+def retrieve_evidence(shap_contributions: list, k_per_query: int = 1) -> RetrievalOutcome:
+    queries = build_queries(shap_contributions)
+    seen_texts = set()
+    passages = []
+    for q in queries:
+        for passage in retrieve(q, k=k_per_query):
+            if passage.text not in seen_texts:
+                seen_texts.add(passage.text)
+                passages.append(passage)
+    return RetrievalOutcome(queries=queries, passages=passages)

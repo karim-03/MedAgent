@@ -183,6 +183,91 @@ CSV file in that same repo silently remaps those three values down to
 `1/2/3` in the same order — consistent with this project's assumption,
 but confirmed by checking, not by assuming a second time.
 
+## Real hardware run #4 — the grounding fix confirmed working, plus two more small ones caught the same way
+
+Re-running after the grounding fix confirmed it directly, not just via the
+test suite. The printed `SHAP contributions` and the synthesized narrative
+now provably match:
+
+```
+SHAP contributions: [{'feature': 'thalassemia result', ..., 'specific_value': 'reversible defect', ...},
+                      {'feature': 'number of blocked vessels', ..., 'specific_value': '2', ...},
+                      {'feature': 'exercise-induced angina', ..., 'specific_value': 'yes', ...}]
+
+Agent: "...a thalassemia result of reversible defect, two blocked vessels,
+        and exercise-induced angina."
+```
+
+"Reversible defect" and "two blocked vessels" trace directly to
+`specific_value` — not a coincidence this time, a checkable fact. `88%`
+correctly matches `0.878` (consistent rounding, no drift, same as every
+prior run).
+
+Two more small things surfaced on this same run, both fixed the same way
+as before — not with a stronger instruction, by not giving the LLM the
+chance to get it wrong:
+
+1. **Numeric category codes leaked into a patient-facing question**: *"...
+   normal (1), a fixed defect (2), or a reversible defect (3)?"*
+   `generate_followup_question()` was reusing the `FIELD_DESCRIPTIONS` text
+   built for the *extraction* prompt — which correctly needs the numeric
+   codes so the LLM can output valid structured JSON — for the *follow-up
+   question* prompt, which never should have seen them. Fixed by adding
+   `FOLLOWUP_FIELD_TOPICS`, a separate, deliberately code-free description
+   used only for phrasing questions. Regression tests check every topic
+   for the actual leak pattern (`(1)`, `2=`), not just "contains a digit"
+   — a first version of that test was too strict and flagged fine
+   clinical numbers like "over 120 mg/dl", caught and fixed before it
+   shipped.
+2. **A recurring test-fragility bug, now closed for good.** `ScriptedClient`
+   in `tests/unit/test_agent_graph.py` decided which canned response to
+   return by guessing a substring of the real prompt wording (e.g.
+   `"exactly one field" in system.lower()`). That guess broke silently
+   twice already as prompt wording legitimately changed for other fixes —
+   each time, tests kept "passing" by accidentally exercising the wrong
+   branch rather than failing loudly. Fixed by importing the actual
+   `FOLLOWUP_SYSTEM_PROMPT` / `NARRATIVE_SYSTEM_PROMPT` constants and
+   comparing by identity, with an explicit `raise AssertionError` for any
+   unrecognized prompt — so a future mismatch fails immediately and
+   loudly instead of silently degrading into a false pass.
+
+## A pattern across all four hardware runs — one query asking for two results, not two relevant results
+
+Every single run so far, without exception, showed the same second
+"supporting evidence" passage: a **blood pressure category table**,
+completely unrelated to whatever the actual top finding was. This was
+noted as a minor, low-priority nicety after run #2 and left alone — but
+seeing it recur identically on runs #2, #3, and #4 with no variation is a
+pattern, not a coincidence worth continuing to defer, especially with P5
+about to build the formal report directly on top of this evidence list.
+
+**Root cause**: `retrieve_evidence()` built exactly ONE query, from only
+the single top SHAP feature, then asked for `k=2` results from it. In a
+knowledge base this size, asking one focused query for 2 results means
+the second result is whatever's second-closest to that ONE topic in the
+**entire corpus** — not a second genuinely relevant topic. There usually
+isn't a second document specifically about thalassemia stress tests, so
+the second slot got filled by whatever else scored highest overall,
+regardless of actual relevance.
+
+**Fix**: `build_queries()` now builds one topically-focused query **per
+top contributing feature** (up to 3), and `retrieve_evidence()` asks each
+its own single best match, deduplicating by passage text. Verified with
+the same TF-IDF sandbox harness used since P2, on the exact SHAP
+contributions from the real hardware runs: all three queries (thal, ca,
+exang) now return distinct, genuinely relevant passages —
+`nhlbi_coronary_heart_disease_diagnosis` for blocked vessels,
+`nhlbi_angina` for exercise-induced angina — instead of one relevant match
+plus unrelated filler. 4 new regression tests cover query count, the
+`max_queries` cap, the empty-input fallback, and that the fix correctly
+uses the already-computed `base_feature` field rather than re-parsing
+`raw_feature`.
+
+This changes the `AgentState` schema: `retrieval_query: str` is now
+`retrieval_queries: list` (plural) to reflect that there's genuinely more
+than one now — not a cosmetic rename, the state shape actually changed to
+match what the tool now does.
+
 ## Design decisions
 
 - **Extraction schema fix.** The P3 benchmark prompt used a generic
@@ -208,17 +293,30 @@ but confirmed by checking, not by assuming a second time.
   (`_build_acknowledgment`) guarantees it appears whenever there's
   something new to acknowledge, and the LLM's job is narrowed to just
   phrasing the question. The same lesson — don't trust a soft instruction
-  for something that must be true — is what run #3's grounding fix applies
-  again, one layer deeper.
+  for something that must be true — is what run #3's grounding fix and
+  run #4's code-leak fix both apply again, independently.
+- **Follow-up question phrasing and extraction never share a prompt
+  description.** `FOLLOWUP_FIELD_TOPICS` (code-free) and
+  `FIELD_DESCRIPTIONS` (coded, for structured extraction) look similar but
+  serve different LLM jobs with different constraints — reusing one for
+  the other's purpose is what caused the numeric-code leak in run #4.
+- **Test doubles dispatch by comparing against real prompt constants, not
+  by guessing a substring of prompt wording.** The substring approach
+  broke silently twice as prompts legitimately changed; comparing by
+  identity against the imported constant can't drift out of sync with the
+  code it tests, and now raises loudly on any unrecognized prompt instead
+  of silently exercising the wrong branch.
 
 ## Testing
 
-- `tests/unit/test_tools.py` — 34 tests, fully real (no mocking): the
+- `tests/unit/test_tools.py` — 51 tests, fully real (no mocking): the
   trained model, the real codebook ranges, the deterministic field-priority
-  logic, the value-grounding fix. All pass.
+  logic, the value-grounding fix, the code-free follow-up topics, the
+  multi-query retrieval fix. All pass.
 - `tests/unit/test_agent_graph.py` — 8 tests using a scripted fake LLM
-  client to make routing deterministic, since routing correctness — not
-  LLM output quality — is what this layer needs to guarantee.
+  client to make routing deterministic, dispatching by comparing against
+  the real system-prompt constants (not string-guessing) so the test
+  double can't silently drift out of sync with the prompts it's testing.
 - The full non-LLM tool chain (validate → predict → SHAP → build_query)
   was also run directly against real patient cases as a smoke test outside
   the test suite — this is what caught both the thal-duplication bug and,
@@ -226,8 +324,9 @@ but confirmed by checking, not by assuming a second time.
   the design.
 - `scripts/run_p4_pipeline.py` needs a real Ollama server + the FAISS
   index built, so it's the one part of P4 that must run on your machine.
-  Three runs so far have each surfaced one real, previously-invisible
-  issue — please re-run once more with all fixes applied.
+  Four runs so far have each surfaced at least one real,
+  previously-invisible issue — please re-run once more with all fixes
+  applied to confirm a genuinely clean pass.
 
 ## What still needs to run on your machine
 
@@ -240,18 +339,22 @@ python scripts/run_p4_pipeline.py
 
 Specifically worth checking on this next run:
 
-1. Does the final narrative's contributing-factor descriptions match
-   `SHAP contributions` printed at the end exactly (e.g. "reversible
-   defect" only appears if `specific_value` for `thal` says so) — this is
-   the direct, observable check for the grounding fix.
-2. Does the retrieved evidence for the `thal` finding discuss reversible/
-   fixed defects now, instead of blood pressure (should already be
-   confirmed from run #2, worth re-confirming after the reinstall).
-3. Sanity-check the final probability and SHAP contributions still look
-   clinically sane for the scripted patient profile after the
-   `requirements.txt` pin (87.8% previously — small floating-point
-   differences across sklearn patch versions are possible and fine; a
-   large swing would not be).
+1. ~~Does the final narrative match `SHAP contributions` exactly?~~
+   Confirmed on run #4 — "reversible defect" and "two blocked vessels"
+   both traced directly to `specific_value`, not coincidence.
+2. ~~Does retrieved evidence for `thal` discuss reversible/fixed defects?~~
+   Confirmed on run #4 (`medlineplus_nuclear_stress_test.md` in the
+   evidence list).
+3. ~~Does the follow-up question about `thal` avoid numeric codes?~~
+   Confirmed on run #5 — both turns asked naturally, no "(1)/(2)/(3)".
+4. **New**: does "Supporting evidence" now show up to 3 distinct,
+   genuinely relevant passages (one per top contributing factor) instead
+   of the recurring unrelated blood-pressure-table filler seen on every
+   prior run?
+5. Sanity-check the final probability and SHAP contributions still look
+   clinically sane (87.8% previously — small floating-point differences
+   across sklearn patch versions are possible and fine; a large swing
+   would not be).
 
 ## Next milestone
 

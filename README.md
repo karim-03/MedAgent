@@ -18,14 +18,13 @@ in docs/architecture.md Section 0.
       see docs/llm_verification_findings.md.
 - [x] P4 — Agent Core: LangGraph state machine (intake -> clarify/followup
       loop -> predict -> explain -> retrieve -> synthesize), 5 independently
-      testable tools. Four real-hardware runs each found and fixed a real
-      issue — deterministic field selection, code-generated acknowledgment,
-      a knowledge-base content gap, a pinned-versions fix for a real sklearn
-      warning, a genuine narrative hallucination closed by grounding every
-      explanation in the patient's real data, and a numeric-code leak into
-      patient-facing text — with the grounding fix's correctness confirmed
-      directly against real output on the final run, not just by the test
-      suite — see docs/agent_core_findings.md.
+      testable tools. Confirmed clean on real hardware: grounded narrative
+      matches SHAP contributions exactly, follow-up questions are fully
+      code-free, and evidence retrieval now queries per contributing
+      factor (not one query padded to k=2) after every prior run showed
+      the same irrelevant blood-pressure passage as filler — five real
+      issues found and fixed across the milestone, see
+      docs/agent_core_findings.md for the full trace.
 - [ ] P5 — Reporting
 - [ ] P6 — Interfaces
 - [ ] P7 — Hardening

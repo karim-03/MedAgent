@@ -124,7 +124,7 @@ def test_retrieve_returns_relevant_passage_for_thal_query():
     passage instead of returning nothing or something relevant. This
     checks the fix (medlineplus_nuclear_stress_test.md) actually surfaces
     for the same query the agent builds via
-    tools.knowledge_retrieval.build_query for a thal-driven prediction."""
+    tools.knowledge_retrieval.build_queries for a thal-driven prediction."""
     from rag.build_index import build_index
     from rag.retrieve import retrieve
 

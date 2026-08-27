@@ -103,7 +103,7 @@ def build_graph(client: LocalLLMClient):
 
     def retrieve_node(state: AgentState) -> dict:
         outcome = knowledge_retrieval.retrieve_evidence(state["shap_contributions"])
-        return {"retrieval_query": outcome.query, "retrieved_passages": outcome.passages}
+        return {"retrieval_queries": outcome.queries, "retrieved_passages": outcome.passages}
 
     def synthesize_node(state: AgentState) -> dict:
         parts = [state["narrative"]]

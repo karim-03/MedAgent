@@ -65,7 +65,7 @@ def main():
             print(f"Final prediction: class={state['prediction_class']} "
                   f"probability={state['prediction_probability']:.3f}")
             print(f"SHAP contributions: {state['shap_contributions']}")
-            print(f"Retrieval query used: {state['retrieval_query']}")
+            print(f"Retrieval queries used: {state['retrieval_queries']}")
             break
     else:
         print("\nConversation ended without reaching a prediction — check the "

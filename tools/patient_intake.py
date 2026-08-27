@@ -24,6 +24,18 @@ deterministically in code (`_build_acknowledgment`) and prepended to
 whatever the LLM returns, rather than trusted to a soft instruction the
 model isn't reliably following. The LLM's only remaining job is phrasing
 one question about one named field — a narrower, more reliable task.
+
+Third fix, same lesson applied again: generate_followup_question used to
+hand the LLM the FIELD_DESCRIPTIONS line verbatim, which is written for
+the EXTRACTION prompt and includes numeric codes ("1=normal, 2=fixed
+defect, 3=reversible defect") the model needs to know how to output
+structured JSON. Reused for the follow-up question, those same codes
+leaked into patient-facing text ("...normal (1), a fixed defect (2), or a
+reversible defect (3)?") — a real user-visible rough edge, confirmed on a
+real hardware run. The fix, again, is not a stronger instruction not to do
+it — it's not showing the LLM the codes for this prompt in the first
+place. FOLLOWUP_FIELD_TOPICS below is a separate, deliberately code-free
+description used only for phrasing follow-up questions.
 """
 
 import json
@@ -64,7 +76,27 @@ Fields to extract, with their exact meaning:
 
 Return a JSON object using ONLY these exact field names as keys. Omit any field not mentioned — do not include it with a null or guessed value, just leave the key out entirely."""
 
-FOLLOWUP_SYSTEM_PROMPT = """You are a clinical intake assistant. You will be told exactly ONE field to ask about. Write ONE short, natural, plain-language question for that field only — never field codes or jargon like "cp" or "restecg", ask the way a person would describe it (e.g. "Have you had a resting ECG done?"). Output only the question itself, nothing else."""
+FOLLOWUP_SYSTEM_PROMPT = """You are a clinical intake assistant. You will be told exactly ONE topic to ask about. Write ONE short, natural, plain-language question on that topic — never field codes or jargon, never numbers standing in for categories. Let the patient answer in their own words. Output only the question itself, nothing else."""
+
+# Deliberately code-free — see the module docstring's third fix. Used only
+# for phrasing follow-up questions; EXTRACTION_SYSTEM_PROMPT above still
+# uses the full coded FIELD_DESCRIPTIONS, since the extraction LLM's job
+# genuinely requires knowing the codes to output correct structured JSON.
+FOLLOWUP_FIELD_TOPICS = {
+    "age": "the patient's age",
+    "sex": "the patient's sex",
+    "cp": "what kind of chest pain the patient has, if any, and when it happens",
+    "trestbps": "the patient's resting blood pressure",
+    "chol": "the patient's cholesterol level",
+    "fbs": "whether the patient's fasting blood sugar has ever measured high (over 120 mg/dl)",
+    "restecg": "whether the patient has had a resting ECG done, and what it showed",
+    "thalach": "the highest heart rate the patient reached during a stress test or exercise",
+    "exang": "whether the patient gets chest pain specifically during exercise",
+    "oldpeak": "the ST depression reading from an exercise stress test, if the patient has had one",
+    "slope": "what the ST segment slope looked like on a stress test, if the patient knows",
+    "ca": "how many blood vessels an angiogram (if the patient has had one) showed as blocked",
+    "thal": "whether the patient has had a thallium/nuclear stress test, and what it showed",
+}
 
 # Fields the LLM is asked about, in priority order — highest predictive
 # importance first (see docs/model_evaluation_findings.md: thal, ca,
@@ -131,12 +163,9 @@ def _build_acknowledgment(newly_learned_fields: dict) -> str:
 def generate_followup_question(
     client: LocalLLMClient, target_field: str, newly_learned_fields: Optional[dict] = None
 ) -> str:
-    field_line = next(
-        (line for line in FIELD_DESCRIPTIONS.splitlines() if line.startswith(f"- {target_field}:")),
-        f"- {target_field}",
-    )
+    topic = FOLLOWUP_FIELD_TOPICS.get(target_field, target_field)
     result = client.generate(
-        prompt=f"Ask about this field: {field_line}", system=FOLLOWUP_SYSTEM_PROMPT, json_format=False
+        prompt=f"Ask about: {topic}", system=FOLLOWUP_SYSTEM_PROMPT, json_format=False
     )
     question = result.text.strip()
 

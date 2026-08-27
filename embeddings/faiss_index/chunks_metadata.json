@@ -133,6 +133,61 @@
   },
   {
     "id": 12,
+    "chunk_id": "medlineplus_nuclear_stress_test::0.0",
+    "doc_id": "medlineplus_nuclear_stress_test",
+    "section_title": "Nuclear Stress Test \u2014 Reversible vs. Fixed Defects",
+    "text": "*Note: unlike the CDC/NHLBI documents elsewhere in this knowledge base,\nMedlinePlus Medical Encyclopedia articles are A.D.A.M.-licensed content,\nnot a direct U.S. federal government work \u2014 this file is an original\nparaphrase, written specifically to close a retrieval gap found during\nreal testing (the knowledge base had no document explaining what a\n\"reversible defect\" finding actually means, even though it's one of the\nML model's most predictive features).*",
+    "source": "MedlinePlus (National Library of Medicine, NIH) and other NIH-affiliated sources \u2014 paraphrased summary",
+    "title": "Nuclear Stress Test \u2014 Reversible vs. Fixed Defects (paraphrased summary)",
+    "url": "https://medlineplus.gov/ency/article/007201.htm",
+    "retrieved": "2026-08-25"
+  },
+  {
+    "id": 13,
+    "chunk_id": "medlineplus_nuclear_stress_test::1.0",
+    "doc_id": "medlineplus_nuclear_stress_test",
+    "section_title": "What the test does",
+    "text": "A nuclear (thallium or similar tracer) stress test evaluates blood flow to\nthe heart muscle by injecting a small amount of radioactive tracer into\nthe bloodstream, then imaging how that tracer distributes through the\nheart \u2014 once at rest, and once during stress (exercise on a treadmill, or\na medication that simulates exercise for patients who can't exercise). A\nscanning camera captures both sets of images so they can be compared side\nby side.",
+    "source": "MedlinePlus (National Library of Medicine, NIH) and other NIH-affiliated sources \u2014 paraphrased summary",
+    "title": "Nuclear Stress Test \u2014 Reversible vs. Fixed Defects (paraphrased summary)",
+    "url": "https://medlineplus.gov/ency/article/007201.htm",
+    "retrieved": "2026-08-25"
+  },
+  {
+    "id": 14,
+    "chunk_id": "medlineplus_nuclear_stress_test::2.0",
+    "doc_id": "medlineplus_nuclear_stress_test",
+    "section_title": "Reversible defect",
+    "text": "A \"reversible defect\" is a region of the heart muscle that shows reduced\ntracer uptake during the stress images but normal (or substantially\nimproved) uptake in the rest images. This pattern indicates that part of\nthe heart muscle is getting enough blood at rest, but not enough when\ndemand increases during exertion \u2014 usually because a coronary artery\nsupplying that region is narrowed (though not fully blocked) by plaque.\nThe tissue itself is still alive and viable; it's under-supplied only\nunder increased demand. Clinically, a reversible defect is treated as a\nsignal of current, active ischemia \u2014 reduced blood flow to living tissue \u2014\nwhich is why it appears as a strong predictor in models like this\nproject's: it corresponds to a coronary artery that is significantly, but\nnot completely, obstructed.",
+    "source": "MedlinePlus (National Library of Medicine, NIH) and other NIH-affiliated sources \u2014 paraphrased summary",
+    "title": "Nuclear Stress Test \u2014 Reversible vs. Fixed Defects (paraphrased summary)",
+    "url": "https://medlineplus.gov/ency/article/007201.htm",
+    "retrieved": "2026-08-25"
+  },
+  {
+    "id": 15,
+    "chunk_id": "medlineplus_nuclear_stress_test::3.0",
+    "doc_id": "medlineplus_nuclear_stress_test",
+    "section_title": "Fixed defect",
+    "text": "A \"fixed defect\" is a region that shows reduced tracer uptake in BOTH the\nstress and the rest images \u2014 the pattern doesn't change between the two.\nThis usually indicates permanently scarred heart tissue from a prior heart\nattack: dead or scarred muscle doesn't take up the tracer well regardless\nof how much blood is reaching it, because the tissue itself, not the blood\nsupply in the moment, is the limiting factor. (In a minority of cases, a\nfixed-looking defect can also be a technical artifact \u2014 e.g. from breast\nor diaphragm tissue blocking part of the imaging \u2014 which is one reason\nresults are read alongside other information, not in isolation.)",
+    "source": "MedlinePlus (National Library of Medicine, NIH) and other NIH-affiliated sources \u2014 paraphrased summary",
+    "title": "Nuclear Stress Test \u2014 Reversible vs. Fixed Defects (paraphrased summary)",
+    "url": "https://medlineplus.gov/ency/article/007201.htm",
+    "retrieved": "2026-08-25"
+  },
+  {
+    "id": 16,
+    "chunk_id": "medlineplus_nuclear_stress_test::4.0",
+    "doc_id": "medlineplus_nuclear_stress_test",
+    "section_title": "Why this distinction matters clinically",
+    "text": "Reversible and fixed defects point to different underlying problems and\ndifferent treatment implications: a reversible defect suggests a\nnarrowing that is actively restricting blood flow under demand and may be\na target for further intervention, while a fixed defect more often\nreflects prior, established damage. Both are distinct from the vessel\nblockage count seen on a coronary angiogram (the `ca` feature elsewhere in\nthis project's dataset) \u2014 angiography shows which vessels are physically\nnarrowed, while a nuclear stress test shows the functional consequence\n(whether the heart muscle those vessels feed is actually under-supplied).\nThe two tests are complementary, not redundant, which is part of why both\nshow up as independently predictive features in this project's model.",
+    "source": "MedlinePlus (National Library of Medicine, NIH) and other NIH-affiliated sources \u2014 paraphrased summary",
+    "title": "Nuclear Stress Test \u2014 Reversible vs. Fixed Defects (paraphrased summary)",
+    "url": "https://medlineplus.gov/ency/article/007201.htm",
+    "retrieved": "2026-08-25"
+  },
+  {
+    "id": 17,
     "chunk_id": "nhlbi_angina::0.0",
     "doc_id": "nhlbi_angina",
     "section_title": "Angina (Chest Pain)",
@@ -143,7 +198,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 13,
+    "id": 18,
     "chunk_id": "nhlbi_angina::1.0",
     "doc_id": "nhlbi_angina",
     "section_title": "Diagnosis",
@@ -154,7 +209,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 14,
+    "id": 19,
     "chunk_id": "nhlbi_angina::2.0",
     "doc_id": "nhlbi_angina",
     "section_title": "Causes",
@@ -165,7 +220,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 15,
+    "id": 20,
     "chunk_id": "nhlbi_angina::3.0",
     "doc_id": "nhlbi_angina",
     "section_title": "Differences by sex",
@@ -176,7 +231,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 16,
+    "id": 21,
     "chunk_id": "nhlbi_angina::4.0",
     "doc_id": "nhlbi_angina",
     "section_title": "Management",
@@ -187,7 +242,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 17,
+    "id": 22,
     "chunk_id": "nhlbi_blood_cholesterol_diagnosis::0.0",
     "doc_id": "nhlbi_blood_cholesterol_diagnosis",
     "section_title": "Blood Cholesterol \u2014 Diagnosis",
@@ -198,7 +253,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 18,
+    "id": 23,
     "chunk_id": "nhlbi_blood_cholesterol_diagnosis::1.0",
     "doc_id": "nhlbi_blood_cholesterol_diagnosis",
     "section_title": "Medical history and physical exam",
@@ -209,7 +264,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 19,
+    "id": 24,
     "chunk_id": "nhlbi_blood_cholesterol_diagnosis::2.0",
     "doc_id": "nhlbi_blood_cholesterol_diagnosis",
     "section_title": "Screening \u2014 the lipid panel",
@@ -220,7 +275,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 20,
+    "id": 25,
     "chunk_id": "nhlbi_blood_cholesterol_diagnosis::3.0",
     "doc_id": "nhlbi_blood_cholesterol_diagnosis",
     "section_title": "Lipoprotein-a (Lp(a))",
@@ -231,7 +286,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 21,
+    "id": 26,
     "chunk_id": "nhlbi_coronary_heart_disease_diagnosis::0.0",
     "doc_id": "nhlbi_coronary_heart_disease_diagnosis",
     "section_title": "Coronary Heart Disease \u2014 Diagnosis",
@@ -242,7 +297,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 22,
+    "id": 27,
     "chunk_id": "nhlbi_coronary_heart_disease_diagnosis::1.0",
     "doc_id": "nhlbi_coronary_heart_disease_diagnosis",
     "section_title": "Screening",
@@ -253,7 +308,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 23,
+    "id": 28,
     "chunk_id": "nhlbi_coronary_heart_disease_diagnosis::2.0",
     "doc_id": "nhlbi_coronary_heart_disease_diagnosis",
     "section_title": "Risk calculators",
@@ -264,7 +319,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 24,
+    "id": 29,
     "chunk_id": "nhlbi_coronary_heart_disease_diagnosis::3.0",
     "doc_id": "nhlbi_coronary_heart_disease_diagnosis",
     "section_title": "Diagnostic tests and procedures",
@@ -275,7 +330,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 25,
+    "id": 30,
     "chunk_id": "nhlbi_coronary_heart_disease_diagnosis::3.1",
     "doc_id": "nhlbi_coronary_heart_disease_diagnosis",
     "section_title": "Diagnostic tests and procedures",
@@ -286,7 +341,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 26,
+    "id": 31,
     "chunk_id": "nhlbi_coronary_heart_disease_diagnosis::3.2",
     "doc_id": "nhlbi_coronary_heart_disease_diagnosis",
     "section_title": "Diagnostic tests and procedures",
@@ -297,7 +352,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 27,
+    "id": 32,
     "chunk_id": "nhlbi_heart_tests::0.0",
     "doc_id": "nhlbi_heart_tests",
     "section_title": "Electrocardiogram (ECG / EKG)",
@@ -308,7 +363,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 28,
+    "id": 33,
     "chunk_id": "nhlbi_heart_tests::1.0",
     "doc_id": "nhlbi_heart_tests",
     "section_title": "Holter and event monitors",
@@ -319,7 +374,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 29,
+    "id": 34,
     "chunk_id": "nhlbi_heart_tests::2.0",
     "doc_id": "nhlbi_heart_tests",
     "section_title": "Stress test",
@@ -330,7 +385,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 30,
+    "id": 35,
     "chunk_id": "nhlbi_heart_tests::2.1",
     "doc_id": "nhlbi_heart_tests",
     "section_title": "Stress test",
@@ -341,7 +396,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 31,
+    "id": 36,
     "chunk_id": "nhlbi_heart_tests::2.2",
     "doc_id": "nhlbi_heart_tests",
     "section_title": "Stress test",
@@ -352,7 +407,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 32,
+    "id": 37,
     "chunk_id": "nhlbi_heart_tests::3.0",
     "doc_id": "nhlbi_heart_tests",
     "section_title": "Coronary angiography",
@@ -363,7 +418,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 33,
+    "id": 38,
     "chunk_id": "nhlbi_heart_tests::4.0",
     "doc_id": "nhlbi_heart_tests",
     "section_title": "Echocardiography",
@@ -374,7 +429,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 34,
+    "id": 39,
     "chunk_id": "nhlbi_high_blood_pressure_diagnosis::0.0",
     "doc_id": "nhlbi_high_blood_pressure_diagnosis",
     "section_title": "Screening",
@@ -385,7 +440,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 35,
+    "id": 40,
     "chunk_id": "nhlbi_high_blood_pressure_diagnosis::1.0",
     "doc_id": "nhlbi_high_blood_pressure_diagnosis",
     "section_title": "What the numbers mean",
@@ -396,7 +451,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 36,
+    "id": 41,
     "chunk_id": "nhlbi_high_blood_pressure_diagnosis::2.0",
     "doc_id": "nhlbi_high_blood_pressure_diagnosis",
     "section_title": "Blood pressure categories",
@@ -407,7 +462,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 37,
+    "id": 42,
     "chunk_id": "nhlbi_high_blood_pressure_diagnosis::3.0",
     "doc_id": "nhlbi_high_blood_pressure_diagnosis",
     "section_title": "Confirming a diagnosis",
@@ -418,7 +473,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 38,
+    "id": 43,
     "chunk_id": "who_cardiovascular_diseases::0.0",
     "doc_id": "who_cardiovascular_diseases",
     "section_title": "Cardiovascular Diseases \u2014 Global Context (WHO)",
@@ -429,7 +484,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 39,
+    "id": 44,
     "chunk_id": "who_cardiovascular_diseases::1.0",
     "doc_id": "who_cardiovascular_diseases",
     "section_title": "Global burden",
@@ -440,7 +495,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 40,
+    "id": 45,
     "chunk_id": "who_cardiovascular_diseases::2.0",
     "doc_id": "who_cardiovascular_diseases",
     "section_title": "Behavioral and environmental risk factors",
@@ -451,7 +506,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 41,
+    "id": 46,
     "chunk_id": "who_cardiovascular_diseases::3.0",
     "doc_id": "who_cardiovascular_diseases",
     "section_title": "Prevention",
@@ -462,7 +517,7 @@
     "retrieved": "2026-07-26"
   },
   {
-    "id": 42,
+    "id": 47,
     "chunk_id": "who_cardiovascular_diseases::4.0",
     "doc_id": "who_cardiovascular_diseases",
     "section_title": "Why this document is included despite the licensing caveat",

@@ -26,8 +26,6 @@ and build_narrative() passes that grounded value into the prompt. The LLM
 now has something true to be specific about, instead of a reason to guess.
 """
 
-from dataclasses import dataclass
-
 from llm.client import LocalLLMClient
 from ml.evaluation.shap_analysis import explain_single_prediction
 from tools.disease_prediction import PredictionResult, _get_model
@@ -38,12 +36,6 @@ NARRATIVE_SYSTEM_PROMPT = """You are summarizing a machine learning model's hear
 2. For each contributing factor, you will be given its exact value — state that value exactly (e.g. "reversible defect", "2 blocked vessels"). Never state a specific finding that was not given to you, and never generalize a given specific finding into a vaguer category.
 3. Do not add clinical context, typical ranges, or interpretation that was not included in the input — describe only the exact values provided.
 4. Write exactly 3 sentences."""
-
-
-@dataclass
-class RiskExplanation:
-    shap_contributions: list  # list of {feature, specific_value, shap_value, ...} dicts
-    narrative: str
 
 
 def get_shap_contributions(prediction: PredictionResult, top_n: int = 3) -> list:
@@ -104,9 +96,3 @@ def build_narrative(client: LocalLLMClient, prediction: PredictionResult, shap_c
     )
     result = client.generate(prompt=prompt, system=NARRATIVE_SYSTEM_PROMPT, json_format=False)
     return result.text.strip()
-
-
-def explain(client: LocalLLMClient, prediction: PredictionResult, top_n: int = 3) -> RiskExplanation:
-    contributions = get_shap_contributions(prediction, top_n=top_n)
-    narrative = build_narrative(client, prediction, contributions)
-    return RiskExplanation(shap_contributions=contributions, narrative=narrative)

@@ -23,7 +23,6 @@ import logging
 from pathlib import Path
 
 import faiss
-import numpy as np
 from sentence_transformers import SentenceTransformer
 
 from rag.chunking import load_and_chunk_documents

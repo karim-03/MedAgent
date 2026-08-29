@@ -9,7 +9,6 @@ agent-embedded logic, per the project's tool-independence requirement.
 import json
 import logging
 from dataclasses import dataclass
-from pathlib import Path
 
 import faiss
 from sentence_transformers import SentenceTransformer
@@ -77,6 +76,9 @@ def retrieve(query: str, k: int = 3, min_score: float = 0.25) -> list[RetrievedP
                 score=float(score),
             )
         )
+
+    if not results:
+        logger.info("No passage cleared min_score=%.2f for query %r", min_score, query)
     return results
 
 

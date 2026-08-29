@@ -5,8 +5,6 @@ machinery the agent's Risk Explanation Tool will call in Milestone P4, so
 it's built as a reusable function now rather than a one-off script.
 """
 
-from pathlib import Path
-
 import matplotlib
 
 matplotlib.use("Agg")
@@ -14,7 +12,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import shap
 
-FIGURES_DIR = Path("outputs/figures")
+from ml.evaluation.metrics import FIGURES_DIR
 
 
 def run_shap_summary(pipe, X_test, model_name: str, max_display: int = 10, save: bool = True):

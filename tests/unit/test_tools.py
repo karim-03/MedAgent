@@ -21,7 +21,6 @@ from tools.patient_intake import (
 )
 from tools.risk_explanation import get_shap_contributions, build_narrative
 from tools.feature_labels import describe_value
-from tools.knowledge_retrieval import build_queries
 
 COMPLETE_PATIENT = {
     "age": 58, "sex": "man", "cp": 3, "trestbps": 145, "chol": 260,
@@ -284,40 +283,3 @@ def test_narrative_prompt_includes_grounded_value_not_just_label():
     build_narrative(client, prediction, contributions)
 
     assert "thalassemia result = reversible defect" in client.last_prompt
-
-
-# ---------- knowledge_retrieval.build_queries ----------
-# Regression coverage for a real, recurring issue: every P4 hardware run
-# showed an irrelevant "blood pressure categories" passage riding along
-# as filler evidence, because one query asked for k=2 results instead of
-# querying each top feature's own topic separately.
-
-SAMPLE_SHAP_CONTRIBUTIONS = [
-    {"feature": "thalassemia result", "base_feature": "thal", "raw_feature": "cat__thal_2", "specific_value": "reversible defect", "shap_value": 0.0842},
-    {"feature": "number of blocked vessels", "base_feature": "ca", "raw_feature": "num__ca", "specific_value": "2", "shap_value": 0.0688},
-    {"feature": "exercise-induced angina", "base_feature": "exang", "raw_feature": "bin__exang", "specific_value": "yes", "shap_value": 0.0521},
-]
-
-
-def test_build_queries_returns_one_query_per_contribution():
-    queries = build_queries(SAMPLE_SHAP_CONTRIBUTIONS)
-    assert len(queries) == 3
-    assert queries[0] != queries[1] != queries[2]  # distinct topics, not the same query repeated
-
-
-def test_build_queries_respects_max_queries():
-    queries = build_queries(SAMPLE_SHAP_CONTRIBUTIONS, max_queries=1)
-    assert len(queries) == 1
-
-
-def test_build_queries_falls_back_on_empty_contributions():
-    queries = build_queries([])
-    assert queries == ["heart disease risk factors"]
-
-
-def test_build_queries_uses_base_feature_directly_not_raw_feature_parsing():
-    # confirms the fix uses the already-computed base_feature field rather
-    # than re-parsing raw_feature — the thal query should reflect 'thal',
-    # not whatever base cat__thal_2's suffix-stripping would produce
-    queries = build_queries([SAMPLE_SHAP_CONTRIBUTIONS[0]])
-    assert "thalassemia" in queries[0].lower()

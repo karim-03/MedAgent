@@ -15,29 +15,25 @@ from pathlib import Path
 
 import joblib
 import pandas as pd
-import yaml
 
-CONFIG_PATH = Path("config/settings.yaml")
+from config.loader import load_settings
+from ml.training.preprocessing import NOMINAL_COLUMNS, BINARY_COLUMNS, NUMERIC_COLUMNS
 
-# Exact column order the pipeline's ColumnTransformer was fit on — see
-# ml/training/preprocessing.py. Order doesn't matter for a ColumnTransformer
-# selecting by name, but the SET must match exactly, or sklearn raises.
-FEATURE_COLUMNS = [
-    "age", "sex", "cp", "trestbps", "chol", "fbs", "restecg",
-    "thalach", "exang", "oldpeak", "slope", "ca", "thal",
-]
+# The 13 columns the pipeline's ColumnTransformer was fit on — derived
+# from preprocessing.py's column groups (the ones actually used to build
+# the trained pipeline) rather than a second hand-typed list that could
+# silently drift out of sync with them. Order doesn't matter for a
+# ColumnTransformer selecting by name; the SET must match exactly, or
+# sklearn raises.
+FEATURE_COLUMNS = NOMINAL_COLUMNS + BINARY_COLUMNS + NUMERIC_COLUMNS
 
 _model_cache = None
-
-
-def _load_config() -> dict:
-    return yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
 
 
 def _get_model():
     global _model_cache
     if _model_cache is None:
-        config = _load_config()
+        config = load_settings()
         model_path = Path(config["ml"]["model_path"])
         if not model_path.exists():
             raise FileNotFoundError(

@@ -41,17 +41,12 @@ description used only for phrasing follow-up questions.
 import json
 import logging
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Optional
-
-import yaml
 
 from llm.client import LocalLLMClient
 from tools.feature_labels import FEATURE_LABELS
 
 logger = logging.getLogger(__name__)
-
-CONFIG_PATH = Path("config/settings.yaml")
 
 FIELD_DESCRIPTIONS = """\
 - age: age in years
@@ -121,7 +116,6 @@ FIELD_PRIORITY_ORDER = [
 @dataclass
 class IntakeExtractionResult:
     extracted_fields: dict
-    raw_llm_text: str
 
 
 def extract_fields_from_message(client: LocalLLMClient, message: str) -> IntakeExtractionResult:
@@ -131,7 +125,7 @@ def extract_fields_from_message(client: LocalLLMClient, message: str) -> IntakeE
     except json.JSONDecodeError:
         logger.warning("Intake extraction did not return valid JSON: %r", result.text)
         parsed = {}
-    return IntakeExtractionResult(extracted_fields=parsed, raw_llm_text=result.text)
+    return IntakeExtractionResult(extracted_fields=parsed)
 
 
 def select_next_missing_field(missing_fields: list) -> Optional[str]:
@@ -172,8 +166,3 @@ def generate_followup_question(
     if newly_learned_fields:
         return f"{_build_acknowledgment(newly_learned_fields)} {question}"
     return question
-
-
-def load_required_fields() -> list:
-    config = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
-    return config["agent"]["required_fields"]

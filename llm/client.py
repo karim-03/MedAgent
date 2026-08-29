@@ -21,22 +21,17 @@ Design choices (see docs/architecture.md Section 5.1-5.3):
 import logging
 import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Optional
 
 import ollama
-import yaml
+
+from config.loader import load_settings
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PATH = Path("config/settings.yaml")
-
 
 def _load_llm_config() -> dict:
-    if not CONFIG_PATH.exists():
-        raise FileNotFoundError(f"Config not found at {CONFIG_PATH}")
-    settings = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
-    return settings["llm"]
+    return load_settings()["llm"]
 
 
 @dataclass

@@ -172,7 +172,6 @@ def select_best_model(results_df: pd.DataFrame) -> str:
 
 
 def run(save: bool = True):
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
     X_train, X_test, y_train, y_test = load_processed_data()
     results_df, fitted_pipelines = train_and_compare(X_train, y_train, X_test, y_test)
 
@@ -197,5 +196,6 @@ def run(save: bool = True):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     warnings.filterwarnings("ignore")
     run()

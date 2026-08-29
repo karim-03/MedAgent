@@ -20,6 +20,7 @@ result regardless.
 """
 
 from dataclasses import dataclass
+from typing import List
 
 from rag.retrieve import RetrievedPassage, retrieve
 
@@ -58,8 +59,8 @@ def build_queries(shap_contributions: list, max_queries: int = 3) -> list:
 
 @dataclass
 class RetrievalOutcome:
-    queries: list  # one per top contributing feature
-    passages: list  # list[RetrievedPassage], deduplicated — empty if nothing cleared the relevance threshold
+    queries: List[str]  # one per top contributing feature
+    passages: List[RetrievedPassage]  # deduplicated — empty if nothing cleared the relevance threshold
 
 
 def retrieve_evidence(shap_contributions: list, k_per_query: int = 1) -> RetrievalOutcome:

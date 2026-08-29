@@ -28,11 +28,7 @@ from tools.knowledge_retrieval import RetrievalOutcome
 from tools.patient_intake import FOLLOWUP_SYSTEM_PROMPT
 from tools.risk_explanation import NARRATIVE_SYSTEM_PROMPT
 
-COMPLETE_PATIENT = {
-    "age": 58, "sex": "male", "cp": 3, "trestbps": 145, "chol": 260,
-    "fbs": "no", "restecg": 0, "thalach": 132, "exang": "yes",
-    "oldpeak": 2.1, "slope": 1, "ca": 2, "thal": 3,
-}
+from conftest import COMPLETE_PATIENT
 
 
 class ScriptedClient(LocalLLMClient):

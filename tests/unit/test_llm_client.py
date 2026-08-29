@@ -16,13 +16,12 @@ Run with: pytest tests/unit/test_llm_client.py -v
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from llm.client import LocalLLMClient, OllamaNotRunningError, ModelNotPulledError, GenerationResult
+from llm.client import LocalLLMClient, OllamaNotRunningError, GenerationResult
 
 
 def _ollama_server_available() -> bool:

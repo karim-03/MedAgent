@@ -11,18 +11,16 @@ testable with a fake client (see tests/unit/test_agent_graph.py).
 """
 
 import logging
-from pathlib import Path
 
-import yaml
 from langgraph.graph import StateGraph, START, END
 
 from agent.state import AgentState
+from config.loader import load_settings
 from llm.client import LocalLLMClient
 from tools import patient_intake, validation, disease_prediction, risk_explanation, knowledge_retrieval
 
 logger = logging.getLogger(__name__)
 
-CONFIG_PATH = Path("config/settings.yaml")
 DISCLAIMER = (
     "This is an educational capstone project, not a certified medical device. "
     "It is not validated for clinical use and must never be used to make real "
@@ -31,7 +29,7 @@ DISCLAIMER = (
 
 
 def _load_agent_config() -> dict:
-    return yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))["agent"]
+    return load_settings()["agent"]
 
 
 def build_graph(client: LocalLLMClient):
@@ -118,11 +116,15 @@ def build_graph(client: LocalLLMClient):
 
     def route_after_intake(state: AgentState) -> str:
         if state["validation_errors"]:
+            logger.info("Routing to clarify: %s", state["validation_errors"])
             return "clarify"
         if state["missing_fields"]:
             if state.get("followup_count", 0) >= max_followups:
+                logger.info("Routing to insufficient_info: still missing %s", state["missing_fields"])
                 return "insufficient_info"
+            logger.info("Routing to followup: still missing %s", state["missing_fields"])
             return "followup"
+        logger.info("All required fields present — routing to predict")
         return "predict"
 
     graph = StateGraph(AgentState)

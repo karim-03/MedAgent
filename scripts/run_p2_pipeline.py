@@ -29,22 +29,28 @@ DEMO_QUERIES = [
     "how many people die from heart disease each year",
 ]
 
-try:
-    index, metadata = build_index(save=True)
-    print(f"\nIndex built: {index.ntotal} chunks from the real knowledge base.\n")
 
-    for q in DEMO_QUERIES:
-        results = retrieve(q, k=2)
-        print(f"Query: {q!r}")
-        if not results:
-            print("  (no passage cleared the relevance threshold)")
-        for r in results:
-            print(f"  [{r.score:.3f}] {r.citation()}")
-        print()
+def main():
+    try:
+        index, metadata = build_index(save=True)
+        print(f"\nIndex built: {index.ntotal} chunks from the real knowledge base.\n")
 
-except Exception as exc:
-    print(
-        "\nCould not build/query the index — this step needs internet access "
-        "on first run to download the embedding model from HuggingFace.\n"
-        f"Underlying error: {exc}"
-    )
+        for q in DEMO_QUERIES:
+            results = retrieve(q, k=2)
+            print(f"Query: {q!r}")
+            if not results:
+                print("  (no passage cleared the relevance threshold)")
+            for r in results:
+                print(f"  [{r.score:.3f}] {r.citation()}")
+            print()
+
+    except Exception as exc:
+        print(
+            "\nCould not build/query the index — this step needs internet access "
+            "on first run to download the embedding model from HuggingFace.\n"
+            f"Underlying error: {exc}"
+        )
+
+
+if __name__ == "__main__":
+    main()

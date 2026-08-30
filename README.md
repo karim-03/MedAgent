@@ -25,7 +25,14 @@ in docs/architecture.md Section 0.
       the same irrelevant blood-pressure passage as filler — five real
       issues found and fixed across the milestone, see
       docs/agent_core_findings.md for the full trace.
-- [ ] P5 — Reporting
+- [x] P5 — Reporting: structured Report Generator tool (prediction,
+      confidence, explanation, feature importance, cited evidence,
+      recommended follow-up, disclaimer) — recommended follow-up is
+      config-driven risk tiers, never LLM-written, matching the
+      "LLM never decides the risk-relevant thing" pattern from P4. A real
+      field-ordering bug (patient summary listing thal before age) was
+      caught by generating an actual sample report, not by design review
+      — see docs/reporting_findings.md.
 - [ ] P6 — Interfaces
 - [ ] P7 — Hardening
 
@@ -38,6 +45,7 @@ python scripts/run_p2_pipeline.py     # builds the FAISS index, demos retrieval 
 ollama pull qwen2.5:7b-instruct-q4_K_M && ollama pull gemma3:4b
 python scripts/run_p3_pipeline.py     # benchmarks the local LLM — run this on your actual GPU machine
 python scripts/run_p4_pipeline.py     # runs a real multi-turn agent conversation — also needs your GPU machine
+python scripts/run_p5_pipeline.py     # same conversation, saves + prints the actual downloadable report
 pytest tests/unit/ -v
 ```
 
@@ -46,5 +54,6 @@ for the dataset audit that preprocessing.py implements,
 `docs/model_evaluation_findings.md` for why Random Forest was selected,
 `docs/knowledge_base_findings.md` for the RAG knowledge base sourcing and
 retrieval design, `docs/llm_verification_findings.md` for the local LLM
-setup and real-hardware numbers, and `docs/agent_core_findings.md` for the
-agent graph design and what still needs a real end-to-end run.
+setup and real-hardware numbers, `docs/agent_core_findings.md` for the
+agent graph design and hardware-run findings, and
+`docs/reporting_findings.md` for the report generator design.

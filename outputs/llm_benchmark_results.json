@@ -7,28 +7,28 @@
       "used_fallback": false,
       "prompt_tokens": 83,
       "completion_tokens": 43,
-      "total_duration_s": 5.9720915359999935,
-      "tokens_per_second": 52.66613102353564
+      "total_duration_s": 0.9183450510000171,
+      "tokens_per_second": 50.53057099545225
     },
     {
       "case": "follow_up_question_generation",
-      "text": "Have any lipid profile tests been done to check the cholesterol levels?",
+      "text": "Have any blood tests been done recently, including cholesterol levels?",
       "model_used": "qwen2.5:7b-instruct-q4_K_M",
       "used_fallback": false,
       "prompt_tokens": 86,
-      "completion_tokens": 14,
-      "total_duration_s": 0.3074475559999996,
-      "tokens_per_second": 55.21920050486126
+      "completion_tokens": 13,
+      "total_duration_s": 0.2646218659999988,
+      "tokens_per_second": 55.188106538517054
     },
     {
       "case": "risk_narrative_synthesis",
-      "text": "The model predicts a 78% probability of the patient having heart disease. The key factors contributing to this prediction are a thalassemia indicating a reversible defect, two vessels blocked (ca=2), and an ST depression value of 2.1 during exercise testing.",
+      "text": "The model predicts a 78% probability of the patient having heart disease. The top contributing factors include a thalassemia condition, two vessels with blocked arteries, and an ST depression value of 2.1. These factors significantly influence the model's prediction.",
       "model_used": "qwen2.5:7b-instruct-q4_K_M",
       "used_fallback": false,
       "prompt_tokens": 100,
-      "completion_tokens": 58,
-      "total_duration_s": 1.1850905520000197,
-      "tokens_per_second": 51.244263734787964
+      "completion_tokens": 56,
+      "total_duration_s": 1.1273738520000052,
+      "tokens_per_second": 50.95536764752717
     }
   ],
   "ollama_ps": "NAME                          ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \nqwen2.5:7b-instruct-q4_K_M    845dbda0ea48    4.7 GB    100% GPU     4096       4 minutes from now"

@@ -20,7 +20,7 @@ from tools.patient_intake import (
     FOLLOWUP_FIELD_TOPICS, generate_followup_question,
 )
 from tools.risk_explanation import get_shap_contributions, build_narrative
-from tools.feature_labels import describe_value
+from tools.feature_labels import describe_value, DISPLAY_ORDER, FEATURE_LABELS
 from tools.knowledge_retrieval import build_queries
 
 from conftest import COMPLETE_PATIENT
@@ -220,6 +220,13 @@ def test_describe_value_handles_unexpected_value_gracefully():
     # out-of-codebook value shouldn't crash — validation.py is the layer
     # responsible for rejecting it; this function just needs to not blow up
     assert describe_value("thal", 99) == "99"
+
+
+def test_display_order_covers_every_field_with_a_label():
+    # guards against a field being added to FEATURE_LABELS without also
+    # being added to DISPLAY_ORDER (or vice versa) — either gap would
+    # silently drop a field from patient-facing report output
+    assert set(DISPLAY_ORDER) == set(FEATURE_LABELS.keys())
 
 
 # ---------- risk_explanation.get_shap_contributions / build_narrative ----------

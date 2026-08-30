@@ -116,6 +116,12 @@ def test_complete_valid_fields_runs_full_pipeline_to_synthesize(no_op_retrieval)
     assert client.next_narrative_text in result["turn_response"]
     assert "educational capstone project" in result["turn_response"]  # disclaimer present
 
+    # P5: the full structured report is populated alongside the chat summary
+    assert result["report"] is not None
+    assert result["report"].probability == result["prediction_probability"]
+    assert "## Prediction" in result["report_markdown"]
+    assert "## Recommended Follow-Up" in result["report_markdown"]
+
 
 def test_followup_safety_valve_triggers_insufficient_info():
     client = ScriptedClient()

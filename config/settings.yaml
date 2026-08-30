@@ -43,3 +43,24 @@ agent:
     - ca
     - thal
   max_followup_questions: 8   # safety valve against an infinite intake loop
+
+reporting:
+  # Recommended follow-up is deterministic (probability -> tier), never
+  # LLM-decided — same "LLM never makes the risk-relevant decision, only
+  # narrates" separation already applied to disease prediction itself.
+  # Thresholds are on prediction_probability; tiers are checked in order,
+  # first match wins.
+  disclaimer: >
+    This is an educational capstone project, not a certified medical device.
+    It is not validated for clinical use and must never be used to make real
+    patient-care decisions. Please consult a qualified healthcare professional.
+  risk_tiers:
+    - max_probability: 0.4
+      label: "Lower estimated risk"
+      recommendation: "Discuss these results with a healthcare provider at your next routine visit."
+    - max_probability: 0.7
+      label: "Moderate estimated risk"
+      recommendation: "Discuss these results with a primary care physician in the near future."
+    - max_probability: 1.01   # covers the full remaining range up to and including 1.0
+      label: "Higher estimated risk"
+      recommendation: "Discuss these results with a healthcare provider promptly, such as a cardiologist."

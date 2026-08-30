@@ -17,15 +17,12 @@ from langgraph.graph import StateGraph, START, END
 from agent.state import AgentState
 from config.loader import load_settings
 from llm.client import LocalLLMClient
-from tools import patient_intake, validation, disease_prediction, risk_explanation, knowledge_retrieval
+from tools import (
+    patient_intake, validation, disease_prediction, risk_explanation,
+    knowledge_retrieval, report_generator,
+)
 
 logger = logging.getLogger(__name__)
-
-DISCLAIMER = (
-    "This is an educational capstone project, not a certified medical device. "
-    "It is not validated for clinical use and must never be used to make real "
-    "patient-care decisions. Please consult a qualified healthcare professional."
-)
 
 
 def _load_agent_config() -> dict:
@@ -104,15 +101,20 @@ def build_graph(client: LocalLLMClient):
         return {"retrieval_queries": outcome.queries, "retrieved_passages": outcome.passages}
 
     def synthesize_node(state: AgentState) -> dict:
-        parts = [state["narrative"]]
-        if state["retrieved_passages"]:
-            parts.append("\nSupporting evidence:")
-            for p in state["retrieved_passages"]:
-                parts.append(f"- {p.text[:200]}... ({p.citation()})")
-        else:
-            parts.append("\n(No directly relevant passage found in the knowledge base for this finding.)")
-        parts.append(f"\n{DISCLAIMER}")
-        return {"turn_response": "\n".join(parts), "done": True}
+        report = report_generator.generate_report(
+            normalized_fields=state["normalized_fields"],
+            probability=state["prediction_probability"],
+            predicted_class=state["prediction_class"],
+            narrative=state["narrative"],
+            shap_contributions=state["shap_contributions"],
+            retrieved_passages=state["retrieved_passages"],
+        )
+        return {
+            "turn_response": report_generator.render_chat_summary(report),
+            "report": report,
+            "report_markdown": report_generator.render_full_report_markdown(report),
+            "done": True,
+        }
 
     def route_after_intake(state: AgentState) -> str:
         if state["validation_errors"]:

@@ -24,6 +24,23 @@ FEATURE_LABELS = {
     "thal": "thalassemia result",
 }
 
+# Human-facing display order for patient-facing report sections —
+# demographics first, then presenting symptoms, then vitals/labs, then
+# test results. Deliberately NOT the same as
+# tools.disease_prediction.FEATURE_COLUMNS, which is grouped by ML
+# encoding type (nominal/binary/numeric, for the ColumnTransformer) —
+# that order puts `thal` at index 3 and `age` at index 7, which reads
+# fine to a pipeline and oddly to a human. Caught by generating a real
+# sample report during P5 and noticing the field order looked arbitrary
+# (it reflected the ML pipeline's internal grouping, not something a
+# reader would expect from a clinical summary).
+DISPLAY_ORDER = [
+    "age", "sex",                                             # demographics
+    "cp", "exang",                                             # presenting symptoms
+    "trestbps", "chol", "fbs",                                 # vitals / labs
+    "restecg", "thalach", "oldpeak", "slope", "ca", "thal",    # test results
+]
+
 # Human-readable meaning of each CATEGORICAL field's specific codes — see
 # tools/validation.py CATEGORICAL_VALUES/BINARY_FIELDS for the authoritative
 # valid-range definitions this must stay consistent with, and

@@ -8,6 +8,7 @@ extracted, validated, and computed so far, not a separate memory subsystem.
 from typing import Optional, TypedDict
 
 from tools.disease_prediction import PredictionResult
+from tools.report_generator import Report
 
 
 class AgentState(TypedDict, total=False):
@@ -29,5 +30,8 @@ class AgentState(TypedDict, total=False):
     retrieval_queries: Optional[list]
     retrieved_passages: Optional[list]
 
-    turn_response: Optional[str]  # what the agent says back this turn
+    report: Optional[Report]           # full structured report object (P5)
+    report_markdown: Optional[str]     # rendered, ready to save as a downloadable file
+
+    turn_response: Optional[str]  # what the agent says back this turn — the short chat summary, not the full report
     done: bool                     # True once prediction+explanation+evidence are all in hand
